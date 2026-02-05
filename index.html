@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uforia</title>
+  <meta name="description" content="It's okay to be U.">
+  <meta property="og:title" content="Uforia">
+  <meta property="og:description" content="It's okay to be U.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://tryuforia.com/og-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Uforia">
+  <meta name="twitter:description" content="It's okay to be U.">
+  <meta name="twitter:image" content="https://tryuforia.com/og-preview.png">
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,700&family=Caveat:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #F6C658 0%, #FEA03E 100%);
+      background-attachment: fixed;
+      overflow-x: hidden;
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    /* Subtle grain texture for premium feel */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 180px 180px;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ============================================================
+       FLOATING ORBS - translucent circles drifting in the background
+       GPU-accelerated via will-change + translate3d
+    ============================================================ */
+    .orbs-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.05));
+      will-change: transform;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .orb--blur {
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.03));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    @keyframes drift-1 {
+      0%   { transform: translate3d(0, 0, 0); }
+      25%  { transform: translate3d(80px, -120px, 0); }
+      50%  { transform: translate3d(-40px, -60px, 0); }
+      75%  { transform: translate3d(60px, 40px, 0); }
+      100% { transform: translate3d(0, 0, 0); }
+    }
+
+    @keyframes drift-2 {
+      0%   { transform: translate3d(0, 0, 0); }
+      25%  { transform: translate3d(-100px, 60px, 0); }
+      50%  { transform: translate3d(50px, 120px, 0); }
+      75%  { transform: translate3d(-70px, -30px, 0); }
+      100% { transform: translate3d(0, 0, 0); }
+    }
+
+    @keyframes drift-3 {
+      0%   { transform: translate3d(0, 0, 0); }
+      33%  { transform: translate3d(120px, 80px, 0); }
+      66%  { transform: translate3d(-60px, 140px, 0); }
+      100% { transform: translate3d(0, 0, 0); }
+    }
+
+    @keyframes drift-4 {
+      0%   { transform: translate3d(0, 0, 0); }
+      20%  { transform: translate3d(-50px, -100px, 0); }
+      40%  { transform: translate3d(90px, -40px, 0); }
+      60%  { transform: translate3d(-30px, 70px, 0); }
+      80%  { transform: translate3d(70px, 110px, 0); }
+      100% { transform: translate3d(0, 0, 0); }
+    }
+
+    @keyframes drift-5 {
+      0%   { transform: translate3d(0, 0, 0); }
+      30%  { transform: translate3d(60px, 90px, 0); }
+      60%  { transform: translate3d(-110px, 30px, 0); }
+      100% { transform: translate3d(0, 0, 0); }
+    }
+
+    @keyframes drift-6 {
+      0%   { transform: translate3d(0, 0, 0); }
+      50%  { transform: translate3d(-80px, -70px, 0); }
+      100% { transform: translate3d(0, 0, 0); }
+    }
+
+    .orb-1  { width: 180px; height: 180px; top: 5%;   left: 8%;   opacity: 0.12; animation: drift-1 28s ease-in-out infinite; }
+    .orb-2  { width: 60px;  height: 60px;  top: 15%;  right: 12%; opacity: 0.18; animation: drift-2 22s ease-in-out infinite; }
+    .orb-3  { width: 200px; height: 200px; top: 30%;  left: 60%;  opacity: 0.08; animation: drift-3 35s ease-in-out infinite; }
+    .orb-4  { width: 90px;  height: 90px;  top: 45%;  left: 15%;  opacity: 0.15; animation: drift-4 26s ease-in-out infinite; }
+    .orb-5  { width: 140px; height: 140px; top: 55%;  right: 5%;  opacity: 0.10; animation: drift-5 32s ease-in-out infinite; }
+    .orb-6  { width: 50px;  height: 50px;  top: 70%;  left: 40%;  opacity: 0.20; animation: drift-6 18s ease-in-out infinite; }
+    .orb-7  { width: 120px; height: 120px; top: 80%;  right: 25%; opacity: 0.09; animation: drift-1 30s ease-in-out infinite reverse; }
+    .orb-8  { width: 70px;  height: 70px;  top: 10%;  left: 45%;  opacity: 0.14; animation: drift-3 24s ease-in-out infinite; }
+    .orb-9  { width: 160px; height: 160px; top: 92%;  left: 10%;  opacity: 0.07; animation: drift-4 38s ease-in-out infinite; }
+    .orb-10 { width: 40px;  height: 40px;  top: 38%;  right: 35%; opacity: 0.18; animation: drift-2 20s ease-in-out infinite reverse; }
+    .orb-11 { width: 100px; height: 100px; top: 65%;  left: 70%;  opacity: 0.11; animation: drift-5 27s ease-in-out infinite; }
+
+    /* ============================================================
+       FLOATING EMBERS - warm particles drifting upward
+    ============================================================ */
+    .ember-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .ember-particle {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+
+    /* ============================================================
+       SECTIONS
+    ============================================================ */
+    .section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: 2rem;
+      position: relative;
+    }
+
+
+    /* ============================================================
+       BUTTERFLY - Drift size + Golden Hour breathing pulse
+    ============================================================ */
+    .hero-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    .butterfly-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: scale(0.92);
+      animation: hero-enter 1.8s cubic-bezier(0.23, 1, 0.32, 1) 0.3s forwards;
+    }
+
+    .butterfly-glow {
+      position: absolute;
+      width: clamp(260px, 50vw, 480px);
+      height: clamp(260px, 50vw, 480px);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.08) 40%, transparent 70%);
+      animation: glow-breathe 5s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .butterfly {
+      width: clamp(140px, 30vw, 280px);
+      height: auto;
+      filter:
+        drop-shadow(0 0 20px rgba(255, 255, 255, 0.1))
+        drop-shadow(0 6px 20px rgba(180, 120, 0, 0.08));
+      animation: breathe 5s ease-in-out infinite;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    @keyframes hero-enter {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes breathe {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.06);
+        opacity: 0.9;
+      }
+    }
+
+    @keyframes glow-breathe {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.6;
+      }
+      50% {
+        transform: scale(1.12);
+        opacity: 1;
+      }
+    }
+
+    /* ============================================================
+       BRAND NAME - under the butterfly
+    ============================================================ */
+    .brand-name {
+      font-family: 'Caveat', cursive;
+      font-weight: 400;
+      font-size: clamp(2rem, 5vw, 3.6rem);
+      color: white;
+      letter-spacing: 0.04em;
+      margin-top: 1rem;
+      user-select: none;
+      opacity: 0;
+      transform: scale(0.92);
+      animation: hero-enter 1.8s cubic-bezier(0.23, 1, 0.32, 1) 0.6s forwards;
+    }
+
+    /* ============================================================
+       SCROLL HINT
+    ============================================================ */
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1px;
+      height: 36px;
+      overflow: hidden;
+      opacity: 0;
+      animation: hint-appear 1.5s ease 2.5s forwards;
+    }
+
+    .scroll-hint::after {
+      content: '';
+      position: absolute;
+      top: -36px;
+      left: 0;
+      width: 1px;
+      height: 36px;
+      background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.35));
+      animation: scroll-line 2.6s ease-in-out infinite;
+    }
+
+    @keyframes hint-appear {
+      to { opacity: 1; }
+    }
+
+    @keyframes scroll-line {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(72px); }
+    }
+
+    .has-scrolled .scroll-hint {
+      opacity: 0 !important;
+      transition: opacity 0.8s ease;
+    }
+
+    /* ============================================================
+       TYPOGRAPHY - Whisper-style massive words
+    ============================================================ */
+    .word {
+      font-family: 'Playfair Display', 'Georgia', serif;
+      font-weight: 500;
+      text-align: center;
+      line-height: 1;
+      color: white;
+      text-shadow:
+        0 2px 40px rgba(255, 255, 255, 0.08),
+        0 1px 0 rgba(255, 255, 255, 0.05);
+      user-select: none;
+
+      /* Starts hidden, revealed by IntersectionObserver */
+      opacity: 0;
+      transform: translateY(40px);
+      transition:
+        opacity 1.4s cubic-bezier(0.23, 1, 0.32, 1),
+        transform 1.4s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .word.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .word--its {
+      font-size: clamp(4rem, 15vw, 15rem);
+      letter-spacing: -0.02em;
+    }
+
+    .word--okay {
+      font-size: clamp(4.5rem, 17vw, 17rem);
+      letter-spacing: -0.02em;
+    }
+
+    .word--tobe {
+      font-size: clamp(3.5rem, 13vw, 13rem);
+      letter-spacing: -0.01em;
+    }
+
+    .word--u {
+      font-size: clamp(8rem, 30vw, 30rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      font-style: italic;
+      text-shadow:
+        0 4px 60px rgba(255, 255, 255, 0.12),
+        0 2px 0 rgba(255, 255, 255, 0.06);
+      transition-duration: 1.8s;
+    }
+
+    /* ============================================================
+       HALO CIRCLE - waitlist section
+    ============================================================ */
+    .section--waitlist {
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+
+    .halo-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(20px) scale(0.95);
+      transition: opacity 1.6s cubic-bezier(0.23, 1, 0.32, 1),
+                  transform 1.6s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .halo-wrapper.is-visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .halo-ring {
+      width: clamp(280px, 55vw, 380px);
+      height: clamp(280px, 55vw, 380px);
+      border-radius: 50%;
+      border: 1.5px solid rgba(255, 255, 255, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: halo-rotate 20s linear infinite;
+    }
+
+    @keyframes halo-rotate {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .halo-inner {
+      animation: halo-counter-rotate 20s linear infinite;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      padding: 2.5rem;
+    }
+
+    @keyframes halo-counter-rotate {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(-360deg); }
+    }
+
+    /* ============================================================
+       SAILBOAT - drifting across the bottom
+    ============================================================ */
+    .sailboat {
+      position: absolute;
+      bottom: 0;
+      left: -80px;
+      width: clamp(40px, 6vw, 65px);
+      height: auto;
+      animation: sail-across 90s linear infinite;
+      opacity: 0.22;
+      pointer-events: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    @keyframes sail-across {
+      0%   { left: -80px; }
+      100% { left: calc(100% + 80px); }
+    }
+
+    .halo-text {
+      font-family: 'Caveat', cursive;
+      font-size: clamp(1.4rem, 3.5vw, 2rem);
+      font-weight: 400;
+      color: rgba(255, 255, 255, 0.85);
+      letter-spacing: 0.02em;
+      user-select: none;
+    }
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
+    @media (max-width: 480px) {
+      .section {
+        padding: 1.5rem;
+      }
+
+      .butterfly {
+        width: clamp(120px, 40vw, 200px);
+      }
+
+      .butterfly-glow {
+        width: clamp(170px, 56vw, 280px);
+        height: clamp(170px, 56vw, 280px);
+      }
+
+      .halo-ring {
+        width: 240px;
+        height: 240px;
+      }
+    }
+
+    /* ============================================================
+       ACCESSIBILITY - respect reduced motion
+    ============================================================ */
+    @media (prefers-reduced-motion: reduce) {
+      .word {
+        transition-duration: 0.01ms;
+      }
+
+      .butterfly,
+      .butterfly-glow {
+        animation: none;
+      }
+
+      .butterfly-container {
+        opacity: 1;
+        transform: none;
+        animation: none;
+      }
+
+      .brand-name {
+        opacity: 1;
+        transform: none;
+        animation: none;
+      }
+
+      .scroll-hint {
+        display: none;
+      }
+
+      .orb {
+        animation: none !important;
+      }
+
+      .ember-particle {
+        display: none;
+      }
+
+      .halo-ring {
+        animation: none;
+      }
+
+      .halo-inner {
+        animation: none;
+      }
+
+      .halo-wrapper {
+        opacity: 1;
+        transform: none;
+        transition-duration: 0.01ms;
+      }
+
+      .sailboat {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Floating orbs -->
+  <div class="orbs-container">
+    <div class="orb orb-1 orb--blur" data-depth="1"></div>
+    <div class="orb orb-2" data-depth="3"></div>
+    <div class="orb orb-3 orb--blur" data-depth="1"></div>
+    <div class="orb orb-4" data-depth="2"></div>
+    <div class="orb orb-5 orb--blur" data-depth="1"></div>
+    <div class="orb orb-6" data-depth="3"></div>
+    <div class="orb orb-7" data-depth="2"></div>
+    <div class="orb orb-8" data-depth="3"></div>
+    <div class="orb orb-9 orb--blur" data-depth="1"></div>
+    <div class="orb orb-10" data-depth="2"></div>
+    <div class="orb orb-11" data-depth="2"></div>
+  </div>
+
+  <!-- Floating embers -->
+  <div class="ember-canvas" id="ember-canvas"></div>
+
+  <div class="page">
+
+    <!-- 1. Arrival: The butterfly, breathing, warm -->
+    <section class="section">
+      <div class="hero-group">
+        <div class="butterfly-container">
+          <div class="butterfly-glow"></div>
+          <img
+            src="logo.png"
+            alt="Uforia"
+            class="butterfly"
+            loading="eager"
+          >
+        </div>
+        <span class="brand-name">Uforia</span>
+      </div>
+      <div class="scroll-hint" aria-hidden="true"></div>
+    </section>
+
+    <!-- 2. "It's" -->
+    <section class="section">
+      <span class="word word--its">It's</span>
+    </section>
+
+    <!-- 3. "okay" -->
+    <section class="section">
+      <span class="word word--okay">okay</span>
+    </section>
+
+    <!-- 4. "to be" -->
+    <section class="section">
+      <span class="word word--tobe">to be</span>
+    </section>
+
+    <!-- 5. "U" - the climax -->
+    <section class="section">
+      <span class="word word--u">U</span>
+    </section>
+
+    <!-- 6. Waitlist - the halo circle -->
+    <section class="section section--waitlist">
+      <img src="boat.png" alt="" class="sailboat" aria-hidden="true">
+      <div class="halo-wrapper" id="halo-wrapper">
+        <div class="halo-ring">
+          <div class="halo-inner">
+            <span class="halo-text">Coming Soon...</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // Parallax: orbs at different depths move at different scroll speeds
+      // CSS animations own the orb's transform, so we wrap each orb
+      // in a parallax layer and translate the layer instead
+      var orbs = document.querySelectorAll('.orb');
+      var depthFactors = { '1': 0.015, '2': 0.04, '3': 0.07 };
+      var ticking = false;
+
+      orbs.forEach(function (orb) {
+        var wrapper = document.createElement('div');
+        wrapper.style.position = 'absolute';
+        wrapper.style.inset = '0';
+        wrapper.style.pointerEvents = 'none';
+        wrapper.setAttribute('data-depth', orb.getAttribute('data-depth') || '2');
+        wrapper.className = 'parallax-layer';
+        orb.parentNode.insertBefore(wrapper, orb);
+        wrapper.appendChild(orb);
+        orb.style.position = 'absolute';
+      });
+
+      var layers = document.querySelectorAll('.parallax-layer');
+
+      function applyParallax() {
+        var scrollY = window.scrollY;
+        for (var i = 0; i < layers.length; i++) {
+          var depth = layers[i].getAttribute('data-depth') || '2';
+          var factor = depthFactors[depth] || 0.04;
+          layers[i].style.transform = 'translate3d(0,' + -(scrollY * factor) + 'px, 0)';
+        }
+        ticking = false;
+      }
+
+      window.addEventListener('scroll', function () {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(applyParallax);
+        }
+      }, { passive: true });
+
+      // Reveal words on scroll via IntersectionObserver
+      var words = document.querySelectorAll('.word');
+
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.2,
+        rootMargin: '0px 0px -80px 0px'
+      });
+
+      words.forEach(function (el) {
+        observer.observe(el);
+      });
+
+      // Hide scroll hint after first scroll
+      var scrolled = false;
+      window.addEventListener('scroll', function () {
+        if (!scrolled && window.scrollY > 40) {
+          scrolled = true;
+          document.body.classList.add('has-scrolled');
+        }
+      }, { passive: true });
+
+      // Reveal halo circle on scroll
+      var haloWrapper = document.getElementById('halo-wrapper');
+      var haloObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            haloObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.2, rootMargin: '0px 0px -60px 0px' });
+      haloObserver.observe(haloWrapper);
+
+      // ============================================================
+      // FLOATING EMBERS - warm particles across the whole page
+      // ============================================================
+      var emberCanvas = document.getElementById('ember-canvas');
+      var emberColors = ['#FFB347', '#FF8C42', '#FFF3E0', '#FFD08A', '#FFCC80', '#FFA726'];
+      var embers = [];
+      var emberTime = 0;
+
+      function randomBetween(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      function createEmber() {
+        var el = document.createElement('div');
+        el.className = 'ember-particle';
+
+        var size = randomBetween(2, 6);
+        var color = emberColors[Math.floor(Math.random() * emberColors.length)];
+
+        el.style.width = size + 'px';
+        el.style.height = size + 'px';
+        el.style.background = 'radial-gradient(circle, ' + color + ', ' + color + '88)';
+        el.style.boxShadow = '0 0 ' + (size * 2) + 'px ' + color + '66';
+        el.style.opacity = '0';
+
+        emberCanvas.appendChild(el);
+
+        var ember = {
+          el: el,
+          x: randomBetween(5, 95),
+          y: randomBetween(80, 110),
+          speedY: randomBetween(0.15, 0.45),
+          driftPhase: randomBetween(0, Math.PI * 2),
+          driftAmplitude: randomBetween(0.3, 0.8),
+          driftX: randomBetween(-0.2, 0.2),
+          maxOpacity: randomBetween(0.4, 0.9),
+          opacity: 0,
+          fadeInSpeed: randomBetween(0.008, 0.02)
+        };
+
+        embers.push(ember);
+      }
+
+      // Stagger spawn
+      var totalEmbers = 35;
+      for (var ei = 0; ei < totalEmbers; ei++) {
+        (function (idx) {
+          setTimeout(function () { createEmber(); }, idx * randomBetween(80, 200));
+        })(ei);
+      }
+
+      function animateEmbers() {
+        emberTime += 0.016;
+
+        for (var i = 0; i < embers.length; i++) {
+          var e = embers[i];
+
+          // Fade in
+          if (e.opacity < e.maxOpacity) {
+            e.opacity = Math.min(e.opacity + e.fadeInSpeed, e.maxOpacity);
+          }
+
+          // Float upward
+          e.y -= e.speedY;
+
+          // Horizontal drift (sinusoidal)
+          e.x += Math.sin(emberTime * 0.8 + e.driftPhase) * e.driftAmplitude * 0.1 + e.driftX * 0.05;
+
+          // Fade out near top
+          if (e.y < 10) {
+            e.opacity *= 0.98;
+          }
+
+          // Respawn at bottom if faded or off screen
+          if (e.y < -5 || e.opacity < 0.01) {
+            e.y = randomBetween(95, 115);
+            e.x = randomBetween(5, 95);
+            e.opacity = 0;
+            e.speedY = randomBetween(0.15, 0.45);
+            e.driftX = randomBetween(-0.2, 0.2);
+          }
+
+          e.el.style.left = e.x + '%';
+          e.el.style.top = e.y + '%';
+          e.el.style.opacity = String(e.opacity);
+        }
+
+        requestAnimationFrame(animateEmbers);
+      }
+
+      // Start animation once first embers exist
+      setTimeout(animateEmbers, 100);
+    })();
+  </script>
+</body>
+</html>
